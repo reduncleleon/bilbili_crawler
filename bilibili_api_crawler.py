@@ -32,7 +32,7 @@ async def main():
     # 实例化 Credential 类
     #credential = Credential(sessdata=SESSDATA, bili_jct=BILI_JCT, buvid3=BUVID3)
     # 实例化 Video 类
-    v = video.Video(bvid="BV153411k7qn")
+    v = video.Video(bvid="BV11q4y1G7cS")
     # 获取视频信息
     info = await v.get_info()
     # 打印视频信息
