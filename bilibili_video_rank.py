@@ -1,22 +1,20 @@
+import sqlite3
+
 import xlwt
 from bs4 import BeautifulSoup
 import re
 import urllib.request
 import urllib.error
 import time
+import numpy as np
 
 def main():
-    baseurl = r'https://www.bilibili.com/v/popular/rank/music'
+    baseurl = r'https://www.bilibili.com/v/popular/rank/origin'
     datalist = getData(baseurl)
-    saveData(datalist)
+    save2Sqlite(datalist)
     print("爬取完毕！")
 
-    # print(getTime() + " " + "bilibili排行榜")
-    # for i in datalist:
-    #     print("BV：" + i[1], end=" ")
-    #     print("标题：" + i[2], end=" ")
-    #     print("播放量：" + i[3], end=" ")
-    #     print("评论：" + i[4], end="\n")
+
 
 findLink = re.compile(r'<a class="title" href="//(.*?)"')
 findLink_BV = re.compile(r'<a href="//www.bilibili.com/video/(.*?)"')
@@ -102,21 +100,43 @@ def askUrl(url):
             print(e.reason)
     return html
 
-def saveData(datalist):
-    book = xlwt.Workbook(encoding="uft-8",style_compression=0)#不允许改变表格样式
-    sheet = book.add_sheet("bilibili热门视频排行榜",cell_overwrite_ok=True)#允许单元格覆写
-    col = ["视频链接","BV号","标题","播放量","评论","作者"]
-    sheet.write(0,0,"爬取时间")
-    sheet.write(0,1,getTime(0))
-    for i in range(0,len(col)):
-        sheet.write(1,i,col[i])
-    for i in range(0,100):
-        data = datalist[i]
-        for j in range(0,len(data)):
-            sheet.write(i+2,j,data[j])
-    bookName = "bili_ranking_"+getTime(1)+".xlsx"
-    savepath = "./output/" + bookName
-    book.save(savepath)
+# def saveData(datalist):
+#     book = xlwt.Workbook(encoding="uft-8",style_compression=0)#不允许改变表格样式
+#     sheet = book.add_sheet("bilibili热门视频排行榜",cell_overwrite_ok=True)#允许单元格覆写
+#     col = ["视频链接","BV号","标题","播放量","评论","作者"]
+#     sheet.write(0,0,"爬取时间")
+#     sheet.write(0,1,getTime(0))
+#     for i in range(0,len(col)):
+#         sheet.write(1,i,col[i])
+#     for i in range(0,100):
+#         data = datalist[i]
+#         for j in range(0,len(data)):
+#             sheet.write(i+2,j,data[j])
+#     bookName = "bili_ranking_"+getTime(1)+".xlsx"
+#     savepath = "./output/" + bookName
+#     book.save(savepath)
+def save2Sqlite(datalist):
+    conn = sqlite3.connect('data.db')
+    conn.execute("""
+      create table if not exists bilibili_rank_video(
+      bvid varchar prinmary key,
+      title varchar DEFAULT NULL,
+      comment_num int DEFAULT NULL,
+      author varchar DEFAULT NULL)""")
+
+    command = "insert into bilibili_rank_video \
+                 values(?,?,?,?);"
+    result = np.array(datalist)
+    result = np.delete(result, [0,3], axis=1)
+
+    for row in result:
+        try:
+            conn.execute(command, row)
+        except Exception as e:
+            print(e)
+            conn.rollback()
+    conn.commit()
+    conn.close()
 
 
 
