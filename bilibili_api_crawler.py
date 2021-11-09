@@ -1,7 +1,6 @@
+import time
 from bilibili_api import comment, sync , video, settings,Credential
 import asyncio
-
-#settings.proxy = "http://jp.relay.zaq1.fast-everyday.xyz"
 
 table='fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
 tr={}
@@ -35,8 +34,11 @@ async def main():
     v = video.Video(bvid="BV11q4y1G7cS")
     # 获取视频信息
     info = await v.get_info()
+    display = [info['tname'],info['title'],info['duration'],info['owner']['mid'],\
+			   info['owner']['name'],info['stat']['view']]
     # 打印视频信息
-    print(info)
+    print(display)
+
     # 给视频点赞
     #await v.like(True)
 
