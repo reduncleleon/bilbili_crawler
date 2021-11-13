@@ -9,9 +9,12 @@ import time
 import numpy as np
 
 def main():
-    baseurl = r'https://www.bilibili.com/v/popular/rank/origin'
-    datalist = getData(baseurl)
-    save2Sqlite(datalist)
+    parts = ['all','music','dance','game','douga','knowledge','tech','sports','car','life','food','animal','kichiku','fashion','ent','cinephile','origin','rookie']
+
+    for part in parts:
+        baseurl = r'https://www.bilibili.com/v/popular/rank/'+part
+        datalist = getData(baseurl)
+        save2Sqlite(datalist)
     print("爬取完毕！")
 
 
@@ -134,7 +137,6 @@ def save2Sqlite(datalist):
             conn.execute(command, row)
         except Exception as e:
             print(e)
-            conn.rollback()
     conn.commit()
     conn.close()
 
