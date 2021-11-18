@@ -8,55 +8,59 @@ import urllib.error
 import time
 import numpy as np
 
+
 def main():
-    parts = ['all','music','dance','game','douga','knowledge','tech','sports','car','life','food','animal','kichiku','fashion','ent','cinephile','origin','rookie']
+    parts = ['all', 'music', 'dance', 'game', 'douga', 'knowledge', 'tech', 'sports', 'car', 'life', 'food', 'animal',
+             'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
 
     for part in parts:
-        baseurl = r'https://www.bilibili.com/v/popular/rank/'+part
-        datalist = getData(baseurl)
+        baseurl = r'https://www.bilibili.com/v/popular/rank/' + part
+        datalist = get_data(baseurl)
         save2Sqlite(datalist)
     print("爬取完毕！")
-
 
 
 findLink = re.compile(r'<a class="title" href="//(.*?)"')
 findLink_BV = re.compile(r'<a href="//www.bilibili.com/video/(.*?)"')
 findTitle = re.compile(r'target="_blank">(.*?)</a>')
-findPlay = re.compile(r'<i class="b-icon play"></i>(.*?)</span>',re.S)
-findView = re.compile(r'<i class="b-icon view"></i>(.*?)</span>',re.S)
-findAuthor = re.compile(r'<i class="b-icon author"></i>(.*?)</span>',re.S)
+findPlay = re.compile(r'<i class="b-icon play"></i>(.*?)</span>', re.S)
+findView = re.compile(r'<i class="b-icon view"></i>(.*?)</span>', re.S)
+findAuthor = re.compile(r'<i class="b-icon author"></i>(.*?)</span>', re.S)
 
-def getTime(select):
+
+def get_time(select):
     if select == 0:
         return time.strftime("%Y.%m.%d %H:%M:%S", time.localtime())
     else:
         return time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-def getData(url):
+
+
+def get_data(url):
     datalist = []
     html = askUrl(url)
     soup = BeautifulSoup(html, "html.parser")
     i = 1
 
-    for item in soup.find_all('li',class_="rank-item"):
+    for item in soup.find_all('li', class_="rank-item"):
         data = []
         item = str(item)
 
-        link = re.findall(findLink,item)[0]
+        link = re.findall(findLink, item)[0]
         data.append(link)
 
-        link_BV = re.findall(findLink_BV,item)[0]
+        link_BV = re.findall(findLink_BV, item)[0]
         data.append(link_BV)
 
-        title = re.findall(findTitle,item)[1]  #第二条才是标题信息
+        title = re.findall(findTitle, item)[1]  # 第二条才是标题信息
         data.append(title)
 
-        play = re.findall(findPlay,item)[0]
-        play = re.sub(r"\n?","",play)
+        play = re.findall(findPlay, item)[0]
+        play = re.sub(r"\n?", "", play)
         play = play.strip()
         data.append(play)
 
-        view = re.findall(findView,item)[0]
-        view = re.sub(r'\n?',"",view)
+        view = re.findall(findView, item)[0]
+        view = re.sub(r'\n?', "", view)
         view = view.strip()
         data.append(view)
 
@@ -71,6 +75,7 @@ def getData(url):
         # print("view="+view,end=" ")
         # print(link)
     return datalist
+
 
 def askUrl(url):
     head = {
@@ -103,6 +108,7 @@ def askUrl(url):
             print(e.reason)
     return html
 
+
 # def saveData(datalist):
 #     book = xlwt.Workbook(encoding="uft-8",style_compression=0)#不允许改变表格样式
 #     sheet = book.add_sheet("bilibili热门视频排行榜",cell_overwrite_ok=True)#允许单元格覆写
@@ -130,7 +136,7 @@ def save2Sqlite(datalist):
     command = "insert into bilibili_rank_video \
                  values(?,?,?,?);"
     result = np.array(datalist)
-    result = np.delete(result, [0,3], axis=1)
+    result = np.delete(result, [0, 3], axis=1)
 
     for row in result:
         try:
@@ -139,7 +145,6 @@ def save2Sqlite(datalist):
             print(e)
     conn.commit()
     conn.close()
-
 
 
 if __name__ == "__main__":

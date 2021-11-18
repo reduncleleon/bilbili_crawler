@@ -3,8 +3,9 @@ import numpy as np
 import matplotlib
 import wordcloud
 import sqlite3
-from bilibili_api import comment, sync , video, settings,Credential
+from bilibili_api import comment, sync, video, settings, Credential
 import asyncio
+
 
 async def main():
     conn = sqlite3.connect('data.db')
@@ -34,6 +35,8 @@ async def main():
 
     conn.commit()
     conn.close()
+
+
 if __name__ == '__main__':
     # 主入口
     asyncio.get_event_loop().run_until_complete(main())
