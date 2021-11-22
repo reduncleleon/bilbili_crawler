@@ -1,7 +1,4 @@
 import time
-import numpy as np
-import matplotlib
-import wordcloud
 import sqlite3
 from bilibili_api import comment, sync, video, settings, Credential
 import asyncio
