@@ -1,6 +1,7 @@
 import sqlite3
 import sys
 
+# 计算词向量之间的相似度
 sys.path.append('..')
 from text2vec import SBert, cos_sim
 

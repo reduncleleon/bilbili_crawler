@@ -1,5 +1,5 @@
 from pyecharts import options as opts
-from pyecharts.charts import Pie
+from pyecharts.charts import Pie, Page
 from pyecharts.charts import WordCloud
 import time
 import sqlite3
@@ -31,7 +31,7 @@ data_pairs_simple = [list(z) for z in zip(kind_num_simple.keys(), kind_num_simpl
 data_pairs_simple.sort(key=lambda x: x[1])
 
 
-c = (
+c1 = (
     Pie()
     .add(
         "",
@@ -47,30 +47,49 @@ c = (
         tooltip_opts=opts.TooltipOpts(
             trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
         ),)
-    .render("pie_tag.html")
 )
-c = (
+c2 = (
     Pie()
     .add(
         "",
         data_pair=data_pairs_simple,
-        center='center',
-        label_opts=opts.LabelOpts(is_show=False, position="center"),
+        radius=["50%", "75%"],
+        center=["60%", "60%"],
+        label_opts=opts.LabelOpts(
+            position="outside",
+            formatter="{hr|}\n {b|{b}: }  {per|{d}%}  ",
+            background_color="#eee",
+            border_color="#aaa",
+            border_width=1,
+            border_radius=4,
+            rich={
+                "b": {"fontSize": 14, "lineHeight": 20},
+                "hr": {
+                    "borderColor": "#aaa",
+                    "width": "100%",
+                    "borderWidth": 0.5,
+                    "height": 0,
+                },
+                "per": {
+                    "color": "#eee",
+                    "backgroundColor": "#334455",
+                    "padding": [2, 4],
+                    "borderRadius": 2,
+                },
+            },
+        ),
     )
-    .set_global_opts(
-        title_opts=opts.TitleOpts(title="分类后热门视频标签饼状图",pos_left='30%'),
-        legend_opts=opts.LegendOpts(pos_left="legft", orient="vertical"),
-    )
-    .set_series_opts(
-        tooltip_opts=opts.TooltipOpts(
-            trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
-        ),)
-    .render("pie_tag_simple.html")
+    .set_global_opts(title_opts=opts.TitleOpts(title="分类后热门视频标签统计图",pos_left='50%'),
+            legend_opts=opts.LegendOpts(is_show=False),)
 )
 
-c = (
+c3 = (
     WordCloud()
     .add("", data_pairs, word_size_range=[12, 55],mask_image='icon.png')
     .set_global_opts(title_opts=opts.TitleOpts(title="B站热门视频标签词云",pos_left="center"))
-    .render("wordcloud_tag.html")
 )
+
+page = Page(layout=Page.SimplePageLayout)  # 简单布局
+# 将上面定义好的图添加到 page
+page.add(c1,c2,c3)
+page.render("page_simple_layout.html")
