@@ -1,11 +1,9 @@
-import time
-from bilibili_api import comment, sync , video, settings,Credential
-import asyncio
+from bilibili_api import comment, sync
 
 table='fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
 tr={}
 for i in range(58):
-    tr[table[i]]=i
+	tr[table[i]]=i
 s=[11,10,3,8,4,6]
 xor=177451812
 add=8728348608
@@ -23,25 +21,33 @@ def enc(x):
 		r[s[i]]=table[x//58**i%58]
 	return ''.join(r)
 
-SESSDATA = ""
-BILI_JCT = ""
-BUVID3 = ""
-
 async def main():
-    # 实例化 Credential 类
-    #credential = Credential(sessdata=SESSDATA, bili_jct=BILI_JCT, buvid3=BUVID3)
-    # 实例化 Video 类
-    v = video.Video(bvid="BV11q4y1G7cS")
-    # 获取视频信息
-    info = await v.get_info()
-    display = [info['tname'],info['title'],info['duration'],info['owner']['mid'],\
-			   info['owner']['name'],info['stat']['view']]
-    # 打印视频信息
-    print(display)
+    # 存储评论
+    comments = []
+    # 页码
+    page = 1
+    # 当前已获取数量
+    count = 0
+    while True:
+        # 获取评论
+        c = await comment.get_comments(dec('BV1Qb4y1b7uy'), comment.ResourceType.VIDEO, page)
+        # 存储评论
+        comments.extend(c['replies'])
+        # 增加已获取数量
+        count += c['page']['size']
+        # 增加页码
+        page += 1
 
-    # 给视频点赞
-    #await v.like(True)
+        if count >= c['page']['count']:
+            # 当前已获取数量已达到评论总数，跳出循环
+            break
 
-if __name__ == '__main__':
-    # 主入口
-    asyncio.get_event_loop().run_until_complete(main())
+    # 打印评论
+    for cmt in comments:
+        print(f"{cmt['member']['uname']}: {cmt['content']['message']}")
+
+    # 打印评论总数
+    print(f"\n\n共有 {count} 条评论（不含子评论）")
+
+
+sync(main())
