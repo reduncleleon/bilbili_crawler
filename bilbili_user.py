@@ -56,26 +56,13 @@ def run(url):
     time.sleep(0.5)     # 延迟，避免太快 ip 被封
     try:
         r = requests.get(url, headers=head, cookies=cookie, timeout=10).text
-        if r.find("name\":") == -1:
+        signal = 'info\":{\"mid\":' + str(mid) + ',\"name\":\"'
+        if r.find(signal) == -1:
             return
-        name = r[r.find("name\":")+7:r.find('\",\"approve\"')]
-        sex = r[r.find('\"sex\":\"')+7:r.find('\",\"rank')]
-        if r.find('lv0') != -1:
-            level = 0
-        elif r.find('lv1') != -1:
-            level = 1
-        elif r.find('lv2') != -1:
-            level = 2
-        elif r.find('lv3') != -1:
-            level = 3
-        elif r.find('lv4') != -1:
-            level = 4
-        elif r.find('lv5') != -1:
-            level = 5
-        elif r.find('lv6') != -1:
-            level = 6
-        else:
-            level = -1
+        name = r[r.find(signal)+(22 + len(str(mid))):r.find('\",\"sex\":\"')]
+        sex = r[r.find('\",\"sex\":\"') + 9: r.find('\",\"face\":\"')]
+        level = r[r.find(',\"level\":') + 9: r.find(',\"level\":') + 10]
+
         head = {'User-Agent': uas,
                 'X-Requested-With': 'XMLHttpRequest',
                 'Origin': 'http://space.bilibili.com',
@@ -106,22 +93,20 @@ def run(url):
 def save():
     # 将数据保存至本地
     global result, conn, flag, total
-    command = "insert into bilibili_user_info \
-             values(?,?,?,?,?,?,?);"
+    command = "insert into bilibili_user_info values(?,?,?,?,?,?,?);"
     for row in result:
         try:
             conn.execute(command, row)
         except Exception as e:
-            print(e)
-            conn.rollback()
+            print(e, row[0], row[1])
     conn.commit()
     result = []
 
 
 if __name__ == "__main__":
     create()
-    total_num = 5000
-    num = 32*20
+    total_num = 500
+    num = 10
     for i in range(1, int(1*total_num/num)):
         begin = num * i
         urls = ["https://m.bilibili.com/space/{}".format(j)
